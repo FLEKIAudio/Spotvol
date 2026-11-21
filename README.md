@@ -88,4 +88,10 @@ Spotvol is an independent hobby project. It isn't affiliated with, endorsed by o
 
 ## License
 
-[MIT](LICENSE) © 2026 FLEKIAudio
+Spotvol is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE) © 2026 FLEKIAudio.
+
+- ✅ Free to use, study, change and share for **noncommercial** purposes, for example personal use, hobby projects, education or nonprofits.
+- ❌ **Selling** Spotvol, or using it or any part of its code in a commercial product or service, is **not allowed**.
+- When you share it, you must include the license and the line `Required Notice: Copyright 2026 FLEKIAudio`.
+
+Note: versions up to and including 1.2.1 were first published under the MIT License.

@@ -1,5 +1,9 @@
 # Changelog
 
+## License change – 2026-11-21
+- Spotvol is now licensed under the **PolyForm Noncommercial License 1.0.0** instead of MIT. Noncommercial use, changes and sharing stay free; selling Spotvol or using it commercially is not allowed.
+- Versions up to and including 1.2.1 were first published under MIT.
+
 ## 1.2.1 – 2026-11-21
 - New: choose the app language under **Language** in the menu: English or German. The change applies instantly, no restart needed.
 - English is the default for new installations.
