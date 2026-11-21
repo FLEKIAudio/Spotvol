@@ -1,1 +1,8 @@
+# Build-Ergebnisse (DMG als GitHub-Release hochladen, nicht ins Repo)
+Spotvol.app/
 *.dmg
+*.log
+
+# macOS / Editor
+.DS_Store
+.claude/
