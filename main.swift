@@ -11,6 +11,10 @@ import ServiceManagement
 let spotifyID = "com.spotify.client"
 let step = 5
 
+// Sprache: Englisch (Standard) oder Deutsch – im Menü umschaltbar
+var lang = UserDefaults.standard.string(forKey: "language") ?? "en"
+func tr(_ en: String, _ de: String) -> String { lang == "de" ? de : en }
+
 // Fehlerprotokoll – nur bei Problemen (z. B. Spotify antwortet nicht).
 // Liegt lokal unter ~/Library/Logs/Spotvol/spotvol.log, max. ca. 100 KB.
 // Spotvol sendet keine Daten ins Internet.
@@ -54,8 +58,10 @@ struct Hotkey: Equatable {
 
     var name: String {
         if let m = media {
-            return [0: "Lauter-Taste", 1: "Leiser-Taste", 2: "Heller-Taste", 3: "Dunkler-Taste",
-                    7: "Stumm-Taste", 16: "Play/Pause", 17: "Vor-Taste", 18: "Zurück-Taste"][m] ?? "Medientaste \(m)"
+            return [0: tr("Volume Up key", "Lauter-Taste"), 1: tr("Volume Down key", "Leiser-Taste"),
+                    2: tr("Brightness Up key", "Heller-Taste"), 3: tr("Brightness Down key", "Dunkler-Taste"),
+                    7: tr("Mute key", "Stumm-Taste"), 16: "Play/Pause", 17: tr("Next key", "Vor-Taste"),
+                    18: tr("Previous key", "Zurück-Taste")][m] ?? tr("Media key \(m)", "Medientaste \(m)")
         }
         var s = ""
         if mods & CGEventFlags.maskControl.rawValue != 0 { s += "⌃" }
@@ -64,8 +70,8 @@ struct Hotkey: Equatable {
         if mods & CGEventFlags.maskCommand.rawValue != 0 { s += "⌘" }
         let special: [Int: String] = [122: "F1", 120: "F2", 99: "F3", 118: "F4", 96: "F5", 97: "F6", 98: "F7",
             100: "F8", 101: "F9", 109: "F10", 103: "F11", 111: "F12", 105: "F13", 107: "F14", 113: "F15",
-            123: "←", 124: "→", 125: "↓", 126: "↑", 49: "Leertaste", 36: "↩", 48: "⇥", 51: "⌫",
-            116: "Bild↑", 121: "Bild↓", 115: "Pos1", 119: "Ende"]
+            123: "←", 124: "→", 125: "↓", 126: "↑", 49: tr("Space", "Leertaste"), 36: "↩", 48: "⇥", 51: "⌫",
+            116: tr("PgUp", "Bild↑"), 121: tr("PgDn", "Bild↓"), 115: tr("Home", "Pos1"), 119: tr("End", "Ende")]
         return s + (special[keyCode] ?? label)
     }
 }
@@ -200,8 +206,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         button.image = image
         button.appearsDisabled = !enabled
-        button.toolTip = tap == nil ? "Spotvol: Bedienungshilfen-Zugriff fehlt"
-            : !enabled ? "Spotvol: aus" : spotifyRunning ? "Spotvol: Spotify-Lautstärke" : "Spotvol: wartet auf Spotify"
+        button.toolTip = tap == nil ? tr("Spotvol: Accessibility access missing", "Spotvol: Bedienungshilfen-Zugriff fehlt")
+            : !enabled ? tr("Spotvol: off", "Spotvol: aus")
+            : spotifyRunning ? tr("Spotvol: Spotify volume", "Spotvol: Spotify-Lautstärke")
+            : tr("Spotvol: waiting for Spotify", "Spotvol: wartet auf Spotify")
     }
 
     // MARK: Spotify
@@ -339,7 +347,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.delegate = self
         menu.autoenablesItems = false
 
-        warnItem = NSMenuItem(title: "⚠️ Bedienungshilfen erlauben …", action: #selector(openAccessibility), keyEquivalent: "")
+        warnItem = NSMenuItem(title: tr("⚠️ Allow Accessibility …", "⚠️ Bedienungshilfen erlauben …"), action: #selector(openAccessibility), keyEquivalent: "")
         warnItem.target = self
         menu.addItem(warnItem)
 
@@ -358,15 +366,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(sliderItem)
         menu.addItem(.separator())
 
-        enabledItem = item("Aktiv", #selector(toggleEnabled))
+        enabledItem = item(tr("Active", "Aktiv"), #selector(toggleEnabled))
         keysItem = item("", #selector(startRecording))
-        loginItem = item("Beim Anmelden starten", #selector(toggleLogin))
+        loginItem = item(tr("Launch at login", "Beim Anmelden starten"), #selector(toggleLogin))
+
+        // Sprache / Language
+        let langItem = NSMenuItem(title: tr("Language", "Sprache"), action: nil, keyEquivalent: "")
+        let langMenu = NSMenu()
+        for (code, name) in [("en", "English"), ("de", "Deutsch")] {
+            let it = NSMenuItem(title: name, action: #selector(setLanguage(_:)), keyEquivalent: "")
+            it.target = self
+            it.representedObject = code
+            it.state = lang == code ? .on : .off
+            langMenu.addItem(it)
+        }
+        langItem.submenu = langMenu
+        menu.addItem(langItem)
         menu.addItem(.separator())
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
         let about = NSMenuItem(title: "Spotvol \(version) · © 2026 FLEKIAudio", action: nil, keyEquivalent: "")
         about.isEnabled = false
         menu.addItem(about)
-        menu.addItem(NSMenuItem(title: "Beenden", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: tr("Quit", "Beenden"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
     }
 
     func item(_ title: String, _ sel: Selector) -> NSMenuItem {
@@ -386,7 +407,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         slider.integerValue = volume ?? 0
         sliderLabel.stringValue = slider.isEnabled ? "\(volume!) %" : "– %"
         enabledItem.state = enabled ? .on : .off
-        keysItem.title = "Tasten: \(up.name) / \(down.name)   ändern …"
+        keysItem.title = tr("Keys: \(up.name) / \(down.name)   change …", "Tasten: \(up.name) / \(down.name)   ändern …")
         loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
     }
 
@@ -405,6 +426,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc func toggleEnabled() { enabled.toggle() }
 
+    @objc func setLanguage(_ sender: NSMenuItem) {
+        guard let code = sender.representedObject as? String, code != lang else { return }
+        lang = code
+        d.set(code, forKey: "language")
+        // Menü und Tasten-Fenster in der neuen Sprache neu aufbauen
+        menu.removeAllItems()
+        buildMenu()
+        recorderPanel?.close()
+        recorderPanel = nil
+        updateIcon()
+    }
+
     @objc func toggleLogin() {
         let s = SMAppService.mainApp
         try? (s.status == .enabled ? s.unregister() : s.register())
@@ -421,7 +454,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if recorderPanel == nil { buildRecorder() }
         recording = 0
         pendingUp = nil
-        recorderLabel.stringValue = "Drücke jetzt die Taste für LAUTER"
+        recorderLabel.stringValue = tr("Now press the key for VOLUME UP", "Drücke jetzt die Taste für LAUTER")
         createTap()
         NSApp.activate(ignoringOtherApps: true)
         recorderPanel?.center()
@@ -431,7 +464,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func buildRecorder() {
         let p = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 360, height: 130),
                         styleMask: [.titled, .closable], backing: .buffered, defer: false)
-        p.title = "Spotvol – Tasten festlegen"
+        p.title = tr("Spotvol – Set keys", "Spotvol – Tasten festlegen")
         p.isReleasedWhenClosed = false
         p.level = .floating
         let v = p.contentView!
@@ -439,14 +472,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         recorderLabel.font = .systemFont(ofSize: 15, weight: .medium)
         recorderLabel.alignment = .center
         recorderLabel.frame = NSRect(x: 10, y: 74, width: 340, height: 24)
-        let hint = NSTextField(labelWithString: "Auch Kombinationen wie ⌥ + ↑ gehen · esc = abbrechen")
+        let hint = NSTextField(labelWithString: tr("Combinations like ⌥ + ↑ work too · esc = cancel", "Auch Kombinationen wie ⌥ + ↑ gehen · esc = abbrechen"))
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .secondaryLabelColor
         hint.alignment = .center
         hint.frame = NSRect(x: 10, y: 52, width: 340, height: 16)
-        let reset = NSButton(title: "Standard (Lautstärketasten)", target: self, action: #selector(resetKeys))
+        let reset = NSButton(title: tr("Default (volume keys)", "Standard (Lautstärketasten)"), target: self, action: #selector(resetKeys))
         reset.frame = NSRect(x: 16, y: 12, width: 210, height: 28)
-        let cancel = NSButton(title: "Abbrechen", target: self, action: #selector(cancelRecording))
+        let cancel = NSButton(title: tr("Cancel", "Abbrechen"), target: self, action: #selector(cancelRecording))
         cancel.frame = NSRect(x: 240, y: 12, width: 104, height: 28)
         [recorderLabel, hint, reset, cancel].forEach { v.addSubview($0) }
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: p, queue: .main) { [weak self] _ in
@@ -460,13 +493,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if r == 0 {
             pendingUp = hk
             recording = 1
-            recorderLabel.stringValue = "Lauter: \(hk.name) – jetzt die Taste für LEISER"
+            recorderLabel.stringValue = tr("Up: \(hk.name) – now the key for VOLUME DOWN", "Lauter: \(hk.name) – jetzt die Taste für LEISER")
         } else if hk == pendingUp {
-            recorderLabel.stringValue = "Bitte eine andere Taste für LEISER"
+            recorderLabel.stringValue = tr("Please pick a different key for VOLUME DOWN", "Bitte eine andere Taste für LEISER")
         } else if let u = pendingUp {
             upKey = u; downKey = hk
             up = u; down = hk
-            recorderLabel.stringValue = "Gespeichert: \(u.name) / \(hk.name)"
+            recorderLabel.stringValue = tr("Saved: \(u.name) / \(hk.name)", "Gespeichert: \(u.name) / \(hk.name)")
             recording = nil
             createTap()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.recorderPanel?.orderOut(nil) }

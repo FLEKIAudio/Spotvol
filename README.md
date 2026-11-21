@@ -21,9 +21,13 @@ Spotvol fixes that: while Spotify is open, **F11 / F12** change the Spotify volu
 - When Spotify is **not running**, Spotvol does nothing, so your keys control the Mac as usual.
 - The menu bar shows the current Spotify volume as an icon, a mini bar and a percentage, all in one thin outline.
 - The menu has a volume slider, an on/off switch, custom key bindings and launch at login.
+- **English or German**: English by default, switch any time under **Language** in the menu. The change applies instantly.
 - It's lightweight: one Swift file, no dependencies, about 0 % CPU when idle.
 
-<p align="center"><img src="docs/menu.png" width="340" alt="Spotvol menu with volume slider"></p>
+<p align="center">
+  <img src="docs/menu.png" width="380" alt="Spotvol menu in English">
+  <img src="docs/menu-de.png" width="380" alt="Spotvol menu in German">
+</p>
 
 ### Menu bar states
 
@@ -40,7 +44,7 @@ Spotvol fixes that: while Spotify is open, **F11 / F12** change the Spotify volu
 
 Requirements: a Mac with Apple Silicon (M1 or newer), macOS 13 or later, and the Spotify desktop app.
 
-The app's menu is in German.
+The app starts in English. To switch to German, open the menu and choose **Language → Deutsch**.
 
 ## Building from source
 
@@ -56,9 +60,10 @@ The app is ad-hoc signed. If you build it yourself, grant the Accessibility perm
 ## Privacy
 
 - Spotvol **never sends any data over the internet**. There is no networking code, no analytics and no telemetry.
-- It stores only two settings, locally in `~/Library/Preferences/local.spotivol.app.plist`:
+- It stores only three settings, locally in `~/Library/Preferences/local.spotivol.app.plist`:
   - whether Spotvol is turned on,
-  - your key bindings for volume up and down.
+  - your key bindings for volume up and down,
+  - the app language (English or German).
 - Only when something goes wrong (for example Spotify doesn't respond) does it write a short message to `~/Library/Logs/Spotvol/spotvol.log`. That file is kept under about 100 KB.
 - It talks only to the local Spotify app, through AppleScript, to read and set the volume.
 - About catching keys: by default Spotvol only looks at the media keys (volume up, volume down, mute). Only if you set custom keys does it also check regular key presses against your binding. Key presses are **never stored or sent anywhere**.

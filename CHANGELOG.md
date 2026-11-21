@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 – 2026-11-21
+- New: choose the app language under **Language** in the menu: English or German. The change applies instantly, no restart needed.
+- English is the default for new installations.
+- All texts are translated: menu, key names, tooltips and the "Set keys" window.
+- Updated screenshots (English and German menu).
+
 ## 1.2 – 2026-11-21
 - The error log now lives in `~/Library/Logs/Spotvol/spotvol.log` instead of next to the app (in Applications). It's cleared automatically once it reaches about 100 KB.
 - The DMG shortcut is now called "Applications".
