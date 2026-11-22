@@ -4,6 +4,8 @@
 
 <p align="center">Control the <b>Spotify volume</b> with your Mac's regular volume keys, instead of the system volume.</p>
 
+<p align="center"><sub>Version 1.2.1 · Last updated: November 22, 2026</sub></p>
+
 <p align="center"><img src="docs/menubar.png" width="520" alt="Spotvol in the macOS menu bar"></p>
 
 ---
